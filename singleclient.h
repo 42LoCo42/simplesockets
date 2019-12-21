@@ -23,7 +23,7 @@ public:
 	 * @param address The address to connect to.
 	 * @return If the connection could be established.
 	 */
-	auto start(const Address& address) -> bool;
+	auto connect(const Address& address) -> bool;
 	/**
 	 * @brief stop close()s our socket.
 	 */

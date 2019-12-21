@@ -9,8 +9,7 @@
  * @brief A wrapper around getaddrinfo() with support for functors.
  */
 class SIMPLESOCKETS_EXPORT Address {
-	struct addrinfo* m_addresses {};
-	std::unique_ptr<struct addrinfo> m_addr_ptr {};
+	std::unique_ptr<struct addrinfo> m_addresses {};
 
 public:
 	Address() = default;
@@ -45,7 +44,7 @@ public:
 	auto foreach(Functor& f) const -> bool {
 		if(!isValid()) return false;
 
-		for(auto p = m_addresses; p != nullptr; p = p->ai_next) {
+		for(auto p = m_addresses.get(); p != nullptr; p = p->ai_next) {
 			if(f(p)) return true; // the functor has signaled us to halt
 		}
 		return false; // the functor never succeeded

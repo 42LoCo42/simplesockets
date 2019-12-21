@@ -18,7 +18,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
 	address.cpp \
-	multiclient.cpp \
 	multiserver.cpp \
 	packet.cpp \
 	singleclient.cpp \
@@ -26,7 +25,6 @@ SOURCES += \
 
 HEADERS += \
     address.h \
-    multiclient.h \
     multiserver.h \
     packet.h \
     simplesockets_global.h \
