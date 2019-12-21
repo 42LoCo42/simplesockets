@@ -1,7 +1,7 @@
 #include "address.h"
 
 Address::~Address() {
-	freeaddrinfo(m_addresses);
+	freeaddrinfo(m_addresses.release());
 }
 
 void Address::setaddrinfo(const char *address, const char *port) {
@@ -17,8 +17,9 @@ void Address::setaddrinfo(const char *address, const char *port) {
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if(getaddrinfo(address, port, &hints, &m_addresses) != 0) { // error!
-		m_addresses = nullptr; // invalidate
+	struct addrinfo* tmp {};
+	if(getaddrinfo(address, port, &hints, &tmp) == 0) { // success, swap tmp into storage
+		m_addresses.reset(tmp);
 	}
 }
 

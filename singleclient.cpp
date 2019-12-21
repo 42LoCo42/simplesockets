@@ -1,7 +1,7 @@
 #include "singleclient.h"
 #include <unistd.h>
 
-auto SingleClient::start(const Address& address) -> bool {
+auto SingleClient::connect(const Address& address) -> bool {
 	return address.foreach(*this);
 }
 
@@ -13,7 +13,7 @@ auto SingleClient::operator()(const struct addrinfo* ai) -> bool {
 	}
 
 	// connect to address
-	if(connect(m_sockfd, ai->ai_addr, ai->ai_addrlen) != 0) {
+	if(::connect(m_sockfd, ai->ai_addr, ai->ai_addrlen) != 0) {
 		close(m_sockfd);
 		m_sockfd = -1;
 		return false;
