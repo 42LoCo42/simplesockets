@@ -22,7 +22,7 @@ public:
 	 * @brief Packet Constructor. Loads the string into the content and calculates length data.
 	 * @param s The content.
 	 */
-	explicit Packet(const std::string& s);
+	explicit Packet(std::string s);
 
 	/**
 	 * @brief itostr256 Converts the value to a string of bytes (thus base 256, the size of a byte).

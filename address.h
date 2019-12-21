@@ -3,17 +3,25 @@
 
 #include "simplesockets_global.h"
 #include <netdb.h>
+#include <memory>
 
 /**
  * @brief A wrapper around getaddrinfo() with support for functors.
  */
 class SIMPLESOCKETS_EXPORT Address {
-	struct addrinfo* m_addresses = {};
+	struct addrinfo* m_addresses {};
+	std::unique_ptr<struct addrinfo> m_addr_ptr {};
 
 public:
 	Address() = default;
 	explicit Address(const char* address, const char* port = nullptr) : Address() {setaddrinfo(address, port);}
+	Address(const Address&) = delete;
+	Address(Address&&) noexcept;
 	~Address();
+
+	auto operator=(const Address&) -> Address& = delete;
+	auto operator=(Address&&) noexcept -> Address&;
+
 
 	/**
 	 * @brief setaddrinfo Resolves the given address and stores the result in this object.
@@ -26,7 +34,7 @@ public:
 	 * @brief isValid Check if the provided address could be resolved.
 	 * @return Return validity.
 	 */
-	auto isValid() const -> bool;
+	[[nodiscard]] auto isValid() const -> bool;
 
 	template<typename Functor>
 	/**

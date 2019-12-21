@@ -24,7 +24,7 @@ auto SingleServer::operator()(const struct addrinfo* ai) -> bool {
 	}
 
 	// set socket to listen mode
-	if(listen(m_sockfd, 5) != 0) {
+	if(listen(m_sockfd, BAGLOG_SIZE) != 0) {
 		close(m_sockfd);
 		m_sockfd = -1;
 		return false;

@@ -8,7 +8,7 @@ using namespace std;
 static constexpr size_t BYTESIZE = 8;
 static constexpr size_t BYTEBASE = 1 << BYTESIZE;
 
-Packet::Packet(const string& s): m_data(move(s)) {
+Packet::Packet(string s): m_data(move(s)) {
 	itostr256(s.size(), m_length_data); // write length data
 	if(m_length_data.size() > static_cast<unsigned char>(-1)) {
 		throw overflow_error("Size of length data larger than one byte!");
@@ -16,20 +16,20 @@ Packet::Packet(const string& s): m_data(move(s)) {
 	m_length_header = static_cast<unsigned char>(m_length_data.size()); // write length header
 }
 
-void Packet::itostr256(size_t value, string& target) {
+void Packet::itostr256(size_t value, string& data) {
 	// special case
 	if(value == 0) {
-		target = {'\0'};
+		data = {'\0'};
 		return;
 	}
 
 	// init target
 	auto val_size = static_cast<size_t>(floor(log(value) / log(BYTEBASE)) + 1);
-	target = string(val_size, '\0');
+	data = string(val_size, '\0');
 
 	// convert value to base BYTEBASE
 	for(size_t i = val_size-1; i < val_size; --i) {
-		target[val_size-i-1] = static_cast<char>(floor(value / pow(BYTEBASE, i))); // get current factor
+		data[val_size-i-1] = static_cast<char>(floor(value / pow(BYTEBASE, i))); // get current factor
 		value %= static_cast<size_t>(pow(BYTEBASE, i)); // shift value
 	}
 }

@@ -5,6 +5,8 @@
 #include "address.h"
 #include "packet.h"
 
+constexpr uint BAGLOG_SIZE = 5;
+
 /**
  * @brief A server that can only handle a single client.
  */
