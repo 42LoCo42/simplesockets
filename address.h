@@ -5,22 +5,19 @@
 #include <netdb.h>
 #include <memory>
 
+constexpr auto ADDRESS_DELETER = &freeaddrinfo;
+
 /**
  * @brief A wrapper around getaddrinfo() with support for functors.
  */
 class SIMPLESOCKETS_EXPORT Address {
-	std::unique_ptr<struct addrinfo> m_addresses {};
+	std::unique_ptr<struct addrinfo, decltype(ADDRESS_DELETER)> m_addresses;
 
 public:
-	Address() = default;
-	explicit Address(const char* address, const char* port = nullptr) : Address() {setaddrinfo(address, port);}
-	Address(const Address&) = delete;
-	Address(Address&&) noexcept;
-	~Address();
+	Address();
+	explicit Address(const char* address, const char* port = nullptr);
 
-	auto operator=(const Address&) -> Address& = delete;
 	auto operator=(Address&&) noexcept -> Address&;
-
 
 	/**
 	 * @brief setaddrinfo Resolves the given address and stores the result in this object.

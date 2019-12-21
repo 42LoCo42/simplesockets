@@ -1,7 +1,14 @@
 #include "address.h"
 
-Address::~Address() {
-	freeaddrinfo(m_addresses.release());
+Address::Address() : m_addresses(nullptr, nullptr) {}
+
+Address::Address(const char* address, const char* port) : m_addresses(nullptr, ADDRESS_DELETER) {
+	setaddrinfo(address, port);
+}
+
+auto Address::operator=(Address&& other) noexcept -> Address& {
+	m_addresses.reset(other.m_addresses.release());
+	return *this;
 }
 
 void Address::setaddrinfo(const char *address, const char *port) {

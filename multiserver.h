@@ -47,7 +47,7 @@ public:
 	void disconnect(size_t client_id);
 
 	/**
-	 * @brief disconnectAll Stops all connections and the master socket.
+	 * @brief disconnectAll Stops all connections.
 	 */
 	void disconnectAll();
 

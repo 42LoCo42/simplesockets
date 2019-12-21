@@ -54,7 +54,7 @@ void Packet::send(int socket) const {
 
 		tmp = ::send(socket, buf, 1, 0); // 1 is size of length header, alwyas one byte
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::send: ").append(string(gai_strerror(errno))));
+			throw runtime_error(string("Packet::send: ").append(gai_strerror(errno)));
 		}
 	}
 
@@ -65,7 +65,7 @@ void Packet::send(int socket) const {
 	while(sent < total) {
 		tmp = ::send(socket, length_buf + sent, total - sent, 0);
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::send: ").append(string(gai_strerror(errno))));
+			throw runtime_error(string("Packet::send: ").append(gai_strerror(errno)));
 		}
 		sent += static_cast<size_t>(tmp);
 	}
@@ -77,7 +77,7 @@ void Packet::send(int socket) const {
 	while(sent < total) {
 		tmp = ::send(socket, data_buf + sent, total - sent, 0);
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::send: ").append(string(gai_strerror(errno))));
+			throw runtime_error(string("Packet::send: ").append(gai_strerror(errno)));
 		}
 		sent += static_cast<size_t>(tmp);
 	}
@@ -97,14 +97,14 @@ auto Packet::recv(int socket) -> bool {
 			return false;
 		}
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::recv: ").append(string(gai_strerror(errno))));
+			throw runtime_error(string("Packet::recv: ").append(gai_strerror(errno)));
 		}
 	}
 	m_length_header = static_cast<unsigned char>(length_header_buf[0]); // length header is unsigned
 
 	// receive length data
 	size_t received = 0;
-	unique_ptr<char> length_data_buf(new char[m_length_header+1]);
+	unique_ptr<char[]> length_data_buf(new char[m_length_header+1]);
 	length_data_buf.get()[m_length_header] = '\0';
 
 	while(received < m_length_header) {
@@ -116,7 +116,7 @@ auto Packet::recv(int socket) -> bool {
 			return false;
 		}
 		if(tmp < 0) { // local error
-			throw runtime_error(string("recv: ").append(string(gai_strerror(errno))));
+			throw runtime_error(string("recv: ").append(gai_strerror(errno)));
 		}
 		received += static_cast<size_t>(tmp);
 	}
@@ -127,7 +127,7 @@ auto Packet::recv(int socket) -> bool {
 
 	//receive packet data
 	received = 0;
-	unique_ptr<char> data_buf(new char[length_data+1]);
+	unique_ptr<char[]> data_buf(new char[length_data+1]);
 	data_buf.get()[length_data] = '\0';
 
 	while(received < length_data) {
@@ -139,7 +139,7 @@ auto Packet::recv(int socket) -> bool {
 			return false;
 		}
 		if(tmp < 0) { // local error
-			throw runtime_error(string("recv: ").append(string(gai_strerror(errno))));
+			throw runtime_error(string("recv: ").append(gai_strerror(errno)));
 		}
 		received += static_cast<size_t>(tmp);
 	}
