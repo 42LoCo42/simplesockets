@@ -6,17 +6,17 @@
 #include <memory>
 using namespace std;
 
-#include <iostream>
-
 static constexpr size_t BYTESIZE = 8;
 static constexpr size_t BYTEBASE = 1 << BYTESIZE;
 
-Packet::Packet(string s): m_data(move(s)) {
-	itostr256(m_data.size(), m_length_data); // write length data
-	if(m_length_data.size() > static_cast<unsigned char>(-1)) {
+Packet::Packet(string& data) : Packet(&data) {}
+
+Packet::Packet(string* data) : m_data(data) {
+	itostr256(data->size(), m_length_data); // write length data
+	if(m_length_data.size() > static_cast<u_char>(-1)) {
 		throw overflow_error("Size of length data larger than one byte!");
 	}
-	m_length_header = static_cast<unsigned char>(m_length_data.size()); // write length header
+	m_length_header = static_cast<u_char>(m_length_data.size()); // write length data
 }
 
 void Packet::itostr256(size_t value, string& data) {
@@ -56,7 +56,7 @@ void Packet::send(int socket) const {
 
 		tmp = ::send(socket, buf, 1, 0); // 1 is size of length header, alwyas one byte
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::send: ").append(gai_strerror(errno)));
+			throw runtime_error(string("send in Packet: Error code ") + to_string(errno));
 		}
 	}
 
@@ -67,19 +67,19 @@ void Packet::send(int socket) const {
 	while(sent < total) {
 		tmp = ::send(socket, length_buf + sent, total - sent, 0);
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::send: ").append(gai_strerror(errno)));
+			throw runtime_error(string("send in Packet: Error code ") + to_string(errno));
 		}
 		sent += static_cast<size_t>(tmp);
 	}
 
 	// send packet data
-	total = m_data.size();
+	total = m_data->size();
 	sent = 0;
-	const char* data_buf = m_data.c_str();
+	const char* data_buf = m_data->c_str();
 	while(sent < total) {
 		tmp = ::send(socket, data_buf + sent, total - sent, 0);
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::send: ").append(gai_strerror(errno)));
+			throw runtime_error(string("send in Packet: Error code ") + to_string(errno));
 		}
 		sent += static_cast<size_t>(tmp);
 	}
@@ -95,11 +95,10 @@ auto Packet::recv(int socket) -> bool {
 		if(tmp == 0) {
 			m_length_header = '\0';
 			m_length_data = {};
-			m_data = {};
 			return false;
 		}
 		if(tmp < 0) { // local error
-			throw runtime_error(string("Packet::recv: ").append(gai_strerror(errno)));
+			throw runtime_error(string("recv in Packet: Error code ") + to_string(errno));
 		}
 	}
 	m_length_header = static_cast<unsigned char>(length_header_buf[0]); // length header is unsigned
@@ -114,11 +113,10 @@ auto Packet::recv(int socket) -> bool {
 		if(tmp == 0) {
 			m_length_header = '\0';
 			m_length_data = {};
-			m_data = {};
 			return false;
 		}
 		if(tmp < 0) { // local error
-			throw runtime_error(string("recv: ").append(gai_strerror(errno)));
+			throw runtime_error(string("recv in Packet: Error code ") + to_string(errno));
 		}
 		received += static_cast<size_t>(tmp);
 	}
@@ -137,16 +135,15 @@ auto Packet::recv(int socket) -> bool {
 		if(tmp == 0) {
 			m_length_header = '\0';
 			m_length_data = {};
-			m_data = {};
 			return false;
 		}
 		if(tmp < 0) { // local error
-			throw runtime_error(string("recv: ").append(gai_strerror(errno)));
+			throw runtime_error(string("recv in Packet: Error code ") + to_string(errno));
 		}
 		received += static_cast<size_t>(tmp);
 	}
 
-	m_data = string(data_buf.get());
+	*m_data = data_buf.get(); // create string from data buffer and store it
 
 	return true;
 }

@@ -7,7 +7,7 @@
 #include <vector>
 #include <sys/select.h>
 
-constexpr uint BAGLOG_SIZE = 5;
+constexpr uint BACKLOG_SIZE = 5;
 
 enum ConInfo {
 	NORMAL,

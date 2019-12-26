@@ -3,6 +3,7 @@
 
 #include "simplesockets_global.h"
 #include <string>
+#include <memory>
 
 /**
  * @brief Packs and safely sends data over sockets.
@@ -10,19 +11,24 @@
 class SIMPLESOCKETS_EXPORT Packet {
 	unsigned char m_length_header {};
 	std::string m_length_data {};
-	std::string m_data;
+	std::string* m_data = nullptr;
 
 public:
 	/**
-	 * @brief Packet Default constructor. Leaves members empty.
+	 * @brief Packet Default constructor is deleted, since we need a valid pointer to the data storage region.
 	 */
-	explicit Packet() = default;
+	Packet() = delete;
 
 	/**
-	 * @brief Packet Constructor. Loads the string into the content and calculates length data.
-	 * @param s The content.
+	 * @brief Packet Constructs a packet that uses the specified string as data. Reference shorthand.
+	 * @param data The data of this packet.
 	 */
-	explicit Packet(std::string s);
+	explicit Packet(std::string& data);
+	/**
+	 * @brief Packet Constructs a packet that uses the specified string as data.
+	 * @param data The data of this packet.
+	 */
+	explicit Packet(std::string* data);
 
 	/**
 	 * @brief itostr256 Converts the value to a string of bytes (thus base 256, the size of a byte).
@@ -53,7 +59,7 @@ public:
 	// getters
 	auto length_header() -> unsigned char {return m_length_header;}
 	auto length_data() -> const std::string& {return m_length_data;}
-	auto data() -> const std::string& {return m_data;}
+	auto data() -> const std::string& {return *m_data;}
 };
 
 #endif // PACKET_H

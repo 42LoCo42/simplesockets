@@ -1,6 +1,10 @@
 #include "multiserver.h"
 #include <unistd.h>
 #include <stdexcept>
+#include <numeric>
+#include <cerrno>
+#include <string>
+using namespace std;
 
 auto MultiServer::start(const Address& address) -> bool {
 	return address.foreach(*this);
@@ -29,7 +33,7 @@ auto MultiServer::operator()(const struct addrinfo* ai) -> bool {
 	}
 
 	// set socket to listen mode
-	if(listen(m_sockfd, BAGLOG_SIZE) != 0) {
+	if(listen(m_sockfd, BACKLOG_SIZE) != 0) {
 		close(m_sockfd);
 		m_sockfd = -1;
 		return false;
@@ -46,15 +50,23 @@ auto MultiServer::operator()(const struct addrinfo* ai) -> bool {
 void MultiServer::disconnect(size_t client_id) {
 	if(client_id < m_clientfds.size()) {
 		close(m_clientfds[client_id]);
-		m_clientfds.erase(m_clientfds.begin() + static_cast<long>(client_id));
 		FD_CLR(m_clientfds[client_id], &m_socket_set);
+		m_clientfds.erase(m_clientfds.begin() + static_cast<long>(client_id));
 
 		// this socket was max fd, find new one
 		if(m_clientfds[client_id] >= m_max_fd) {
-			m_max_fd = -1;
-			for(auto fd : m_clientfds) {
-				if(fd > m_max_fd) {
-					m_max_fd = fd;
+			if(m_clientfds.empty()) { // there is only one socket open
+				m_max_fd = m_sockfd;
+			} else {
+				m_max_fd = -1;
+				// find highest clientfd
+				m_max_fd = accumulate(m_clientfds.begin(), m_clientfds.end(), -1, [=](int max_fd, int cur_fd) {
+					if(cur_fd > max_fd) return cur_fd;
+					return max_fd;
+				});
+				// this should never happen, but we test for it just to be safe
+				if(m_sockfd > m_max_fd) {
+					m_max_fd = m_sockfd;
 				}
 			}
 		}
@@ -79,14 +91,14 @@ void MultiServer::sendPacket(const Packet& packet, size_t client_id) const {
 void MultiServer::recvPacket(Packet& packet, size_t& client_id, ConInfo& info, bool accept_new_clients) {
 	m_tmp_set = m_socket_set;
 	if(select(m_max_fd+1, &m_tmp_set, nullptr, nullptr, nullptr) == -1) {
-		throw std::runtime_error("MultiServer: select");
+		throw runtime_error(string("select in MultiServer: Error code ") + to_string(errno));
 	}
 
 	// check for new connection
 	if(accept_new_clients && FD_ISSET(m_sockfd, &m_tmp_set)) {
 		int new_fd = accept(m_sockfd, nullptr, nullptr);
 		if(new_fd < 0) {
-			throw std::runtime_error("Connection to client failed!");
+			throw runtime_error("Connection to client failed!");
 		}
 
 		// store new socket

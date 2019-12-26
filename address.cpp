@@ -1,4 +1,7 @@
 #include "address.h"
+#include <string>
+#include <stdexcept>
+using namespace std;
 
 Address::Address() : m_addresses(nullptr, nullptr) {}
 
@@ -25,8 +28,11 @@ void Address::setaddrinfo(const char *address, const char *port) {
 	hints.ai_socktype = SOCK_STREAM;
 
 	struct addrinfo* tmp {};
-	if(getaddrinfo(address, port, &hints, &tmp) == 0) { // success, swap tmp into storage
+	int retval;
+	if((retval = getaddrinfo(address, port, &hints, &tmp)) == 0) { // success, swap tmp into storage
 		m_addresses.reset(tmp);
+	} else {
+		throw runtime_error(string("getaddrinfo: ") + gai_strerror(retval));
 	}
 }
 
