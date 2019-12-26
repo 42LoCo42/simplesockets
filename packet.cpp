@@ -6,11 +6,13 @@
 #include <memory>
 using namespace std;
 
+#include <iostream>
+
 static constexpr size_t BYTESIZE = 8;
 static constexpr size_t BYTEBASE = 1 << BYTESIZE;
 
 Packet::Packet(string s): m_data(move(s)) {
-	itostr256(s.size(), m_length_data); // write length data
+	itostr256(m_data.size(), m_length_data); // write length data
 	if(m_length_data.size() > static_cast<unsigned char>(-1)) {
 		throw overflow_error("Size of length data larger than one byte!");
 	}
