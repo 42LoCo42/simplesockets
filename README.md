@@ -1,17 +1,19 @@
 # simplesockets - Tutorial
 
+This tutorial doesn't cover everything, please refer to the header files for more operations.
+
 1. Basics
 2. Address
 3. Packet
 4. SingleClient
 5. SingleServer
 6. MultiServer
-   
+
 # 1. Basics
 Choose which header to use:
 - Are you a client? Use `singleclient.h`
 - Do you serve only a single client at a time? `Use singleserver.h`
-- Do you server mutliple clients at once? Use `multiserver.h`
+- Do you serve mutliple clients at once? Use `multiserver.h`
 All headers include `address.h` and `packet.h`, which we will cover now.
 
 # 2. Address
@@ -28,7 +30,7 @@ since a server doesn't connect, only listen on localhost.
 # 3. Packet
 simplesockets transfers data using a simple packet system.
 A packet doesn't actually store the data, only the header.
-Therefore, your data must be permanent.
+Therefore, your data object must be permanent.
 ```C++
 // Won't work
 Packet p("some data");
@@ -57,7 +59,7 @@ Identical to SingleClient except for the name.
 Address addr(nullptr, "42");
 SingleServer server;
 if(!server.start(addr)) {
-	// error handling	
+	// error handling
 }
 
 // Packet handling identical to SingleClient
@@ -94,7 +96,7 @@ while(true) {
 	case ConInfo::NORMAL:
 		// a client has given data to us
 		std::cout << "From client " << client_id << " : " << p.data() << '\n';
-		
+
 		auto response = std::string("thanks, ") + std::to_string(client_id);
 		p = Packet(response);
 		server.sendPacket(p, client_id); // thank sender for their data
